@@ -201,3 +201,14 @@ class TestSecurityHeaders:
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v", "--tb=short"])
+
+
+class TestCSRF:
+    def _login(self, client):
+        client.post('/login', data={'username': 'admin', 'password': 'admin123'})
+
+    def test_form_requires_csrf_token(self, client):
+        """Form should reject requests without CSRF token."""
+        self._login(client)
+        rv = client.post('/profile', data={'bio': 'test'})
+        assert rv.status_code in [400, 403], 'Form should require CSRF token'
